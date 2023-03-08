@@ -1,0 +1,110 @@
+@media only screen and (max-width:1366px) {
+	
+}
+@media only screen and (max-width:1199px) {
+	
+}
+@media only screen and (max-width:991px){
+	.irs-center-1 {
+		float: none;
+		text-align: center;
+	}
+	.navbar {
+		margin-bottom: 10px;
+	}
+	.nav>li>a {
+	    padding: 10px 8px;
+	}
+	.navbar-brand img {
+		width: 150px;
+		height: auto;
+	}
+	.irs-portfolio-title-field .masonry-gallery.grid-three-item .isotope-item {
+	    width: 29%;
+	}
+
+}
+
+@media only screen and (max-width:979px) {
+	
+}
+@media only screen and (max-width:938px) {
+	
+}
+@media only screen and (max-width:767px) {
+	.irs-center-2 {
+		text-align: center;
+		float: none;
+	}
+	.navbar-nav {
+		height: 280px;
+	}
+	.navbar-default .navbar-nav .open .dropdown-menu>li>a {
+		margin-bottom: 10px;
+	}
+	.navbar-default .navbar-nav .open .dropdown-menu>li>a:hover {
+		padding-left: 22px;	
+		color: #DAAD86;
+	}
+	.navbar-default .navbar-toggle {
+		border-radius: 0;
+		margin-top: 5px;
+	}
+	.irs-header-nav-two .navbar-default .navbar-collapse {
+	    padding: 10px 20px;
+	    padding-right: 20px;
+	}
+	.irs-header-nav-two .navbar-brand img {
+	    margin: 6px 5px 0 10px;
+	}
+	.irs-portfolio-title h4 {
+		font-size: 10px;
+	}
+	.irs-portfolio-title-field .masonry-gallery.grid-three-item .isotope-item {
+	    width: 46%;
+	}
+	.irs-header-nav-two {
+		top: 100px;
+	}
+
+}
+
+@media only screen and (max-width:738px) {
+	.irs-portfolio-title-field .masonry-gallery.grid-three-item .isotope-item {
+	    width: 50%;
+	    margin: 0;
+	}
+}
+
+@media only screen and (max-width:625px) {
+	.irs-faq-col .panel-title {
+	    font-size: 11px;
+	}
+}
+
+@media only screen and (max-width:480px) {
+	.irs-full {
+		width: 100%;
+	}
+	.irs-portfolio-title {
+		top: 50%;
+		margin-top: -10px;
+	}
+	.irs-portfolio-title h4 {
+		display: none;
+	}
+	.irs-faq-col .panel-title {
+	    font-size: 10px;
+	}
+}
+
+
+
+@media only screen and (max-width:335px) {
+	.irs-pagination .pagination > li > a, .irs-pagination .pagination > li > span {
+	   color: #daad86;
+	   margin-left: 2px;
+	   margin-right: 2px;
+	}
+}
+

@@ -1,0 +1,144 @@
+@font-face {
+    font-family: proxiBold;
+    src: url(../fonts/FONTSFREE-NET-PROXIMA-NOVA-BOLD.OTF);
+}
+
+@font-face {
+    font-family: proxiThin;
+    src: url(../fonts/FONTSFREE-NET-PROXIMA-NOVA-THIN.OTF);
+}
+
+@font-face {
+    font-family: milliard;
+    src: url(../fonts/RENE\ BIEDER\ \ MILLIARD\ BOOK.OTF);
+}
+
+.f-proxiBold {
+    font-family: proxiBold;
+}
+
+.f-millird {
+    font-family: milliard;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+.f-10 {
+    font-size: 8px;
+}
+
+.btn-outline-orange {
+    line-height: 1;
+    border: 2px solid #e95b33 !important;
+    border-radius: 5px;
+    background-color: transparent;
+    color: #e95b33;
+    padding: 0.25rem 0.75rem;
+}
+
+.bg-offwhite {
+    background-color: #faf7ea;
+}
+
+.fs-xl {
+    font-size: 52px;
+}
+
+.fs-lg {
+    font-size: 45px;
+    font-weight: 300 !important;
+}
+
+.float-right {
+    float: right;
+}
+
+.ps-5-custom {
+    padding-left: 3rem !important;
+}
+
+.mb-5-custom {
+    margin-bottom: 3rem !important;
+}
+
+.appstore,
+.googleplay {
+    height: 40px;
+}
+
+.text-start-responsive {
+    text-align: start !important;
+}
+
+.text-end-responsive {
+    text-align: end !important;
+}
+
+.image-responsive {
+    width: 80%;
+}
+
+@media (min-width: 1400px) {
+
+    .container,
+    .container-lg,
+    .container-md,
+    .container-sm,
+    .container-xl,
+    .container-xxl {
+        max-width: 1200px;
+    }
+}
+
+@media (max-width: 540px) {
+    .mb-5-custom {
+        margin-bottom: 1rem !important;
+    }
+
+    .image-responsive {
+        max-height: 270px !important;
+    }
+
+    .fs-xl {
+        font-size: 42px;
+    }
+
+    .fs-lg {
+        font-size: 35px;
+    }
+
+    .text-start-responsive,
+    .text-end-responsive {
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 414px) {
+    .ps-5-custom {
+        padding-left: 1rem !important;
+    }
+
+    .image-responsive {
+        max-height: 220px !important;
+    }
+
+    .fs-xl {
+        font-size: 23px;
+    }
+
+    .fs-lg {
+        font-size: 19px;
+    }
+
+}
+
+@media (max-width: 320px) {
+
+    .appstore,
+    .googleplay {
+        width: 90px;
+        height: 25px;
+    }
+}

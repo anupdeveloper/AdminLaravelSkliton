@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title> Awaser </title>
+        <link rel="shortcut icon" href="{{asset('/assets_admin/images/favicon-32x32.png')}}" type="image/x-icon">
+        <link rel="icon" href="{{asset('/assets_admin/images/favicon-32x32.png')}}" type="image/x-icon">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{{asset('/assets_front/home/front/css/bootstrap.rtl.min.css')}}">
+        <link href="{{asset('/assets_front/home/front/css/bootstrap.min.css')}}" rel="stylesheet">
+        <!-- custom styles -->
+        <link href="{{asset('/assets_front/home/front/css/style.css')}}" rel="stylesheet">
+        <style>
+            .logo {
+                text-align: center;
+                padding: 30px;
+            }
+            .fs-lg {
+                    font-size: 18px;
+                    font-weight: 300 !important;
+            }
+            .bg-dark {
+                --bs-bg-opacity: 1;
+                background-color: rgb(32, 22, 48) !important;
+            }
+        </style>
+    </head>
+    <body class="bg-offwhite">
+        <header class="header">
+            <div class="logo">
+                <a href="#"><img src="{{asset('/assets_front/img/logo.png')}}" width="auto"></a>
+            </div>
+        </header>
+        <main class="container mb-5 pb-5">
+            <div class="row align-items-center">
+                <div class="col-md-6 justify-content-center d-flex order-md-1 order-2">
+                    <img src="{{asset('/assets_front/home/front/images/Artboard-5.png')}}" class="ps-5 pt-4 image-responsive"
+                        style="max-height: 450px; width: auto;">
+                </div>
+                <div class="col-md-6 order-md-2 order-1 text-start-responsive">
+                    <div class="title mb-5-custom">
+                        <h1 class="fs-xl fw-bold text-uppercase f-proxiBold" style="color: #021444;">Awaser App</h1>
+                        <h2 class="fw-normal fs-lg f-millird">
+                            The aim is to connect families, single females and males who are serious about finding a partner in a safe, friendly environment. It provides a search engine to find the best suitable partners based on a user’s preference of a set of filters, like age, family, height range, etc.., and a chatting feature to communicate between users of the application.
+                        </h2>
+                    </div>
+                    <div>
+                        <p class="text-dark mb-0"></p>
+                        <a href="#" target="#">
+                            <button href="#" class="btn-outline-orange text-center">
+                                <img src="{{asset('/assets_front/home/front/images/App-Store-logo1.png')}}" class="appstore">
+                            </button>
+                        </a>
+                        <a href="#" target="#">
+                            <button href="#" class="btn-outline-orange text-center">
+                                <img src="{{asset('/assets_front/home/front/images/Google-Play-logo1.png')}}" class="googleplay">
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="fixed-bottom bg-dark p-3 f-millird">
+            <div class="row">
+                <div class="col-md-6 text-start  text-start-responsive">
+                    <small class="text-white"> Awaser. All Rights Reserved ©</small>
+                </div>
+                <div class="col-md-6   text-end-responsive">
+                    <a href="#" class="text-white pe-2"><small>Privacy Policy</small></a>
+                    <a href="#" class="text-white"><small>Terms &amp; Conditions</small></a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col f-millird  text-start-responsive">
+                    <p class="text-white mb-0">For support contact us via :
+                        <a class="text-white" href="mailto:Info@awaser.sa">Info@awaser.sa </a>
+                    </p>
+                </div>
+            </div>
+        </footer>
+        <!-- Option 1: Bootstrap Bundle with Popper -->
+        <script src="{{asset('/assets_front/home/front/css/js/bootstrap.bundle.min.js') }}"></script>
+    </body>
+</html>

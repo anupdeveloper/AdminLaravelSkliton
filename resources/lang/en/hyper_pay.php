@@ -1,0 +1,43 @@
+<?php
+return [
+
+'checkout' => [
+    'payment_confirmation' => 'Payment Confirmation',
+    'checkout_title' => 'Awaser Checkout',
+    'payment_success' => 'Payment Completed Successfully',
+    'payment_success_desc' => 'Congratulations! you have completed the sign up. You can download Awaser app now and log in using the same mobile number used in registration.',
+    'start_with_awaser' => 'Start With Awaser',
+    'payment_failed' => 'Payment Failed to complete',
+    'try_again' => 'Try Again',
+    'months' => 'Months',
+    'package_label' => ':attribute1 Months/:attribute2 SAR',
+    'summary' => 'Summary',
+    'subscription-hint' => 'Subscription fee is not refundable for any reason',
+    'free' => 'Free',
+    'member_included' => 'Member Included',
+    'plan_duration' => 'Plan Duration',
+    'subscription_months' => ':attribute Months',
+    'member' => 'Member',
+    'type_of_account' => 'Type of Account',
+    'price' => 'Price',
+    'checkout_pay_now' => 'Awaser Pay Now',
+    'sub_total' => 'Sub Total',
+    'total_amt' => 'Total Amount',
+    'vat' => 'Vat',
+    'total_apy_amt' => 'Total Pay Amount',
+    'vat_no' => 'VAT number.',
+    'select_payment_method' => 'Select Payment Method :',
+    'appple_apy' => 'APPLEPAY',
+    'mada' => 'MADA',
+    'visa' => 'VISA MASTER',
+    'pay_now' => 'Pay Now',
+    'procced_to_checkout' => 'Procced to Checkout',
+    'note' => 'This is a one time payment and it will expire after 3 months',
+    'price_tag' => ':attribute SAR',
+    'saudi_currency' => 'SAR',
+    'currently_not_avaliable' => 'Currently not available',
+    //'member_included' => 'Member Included',
+    'payment_link_expired' => 'Your payment link is expired.',
+]
+    
+];

@@ -1,0 +1,43 @@
+<?php
+return [
+
+'checkout' => [
+    'payment_confirmation' => 'تأكيد الدفعة',
+    'checkout_title' => 'الباقات والدفع',
+    'payment_success' => 'اكتمل الدفع بنجاح',
+    'payment_success_desc' => 'مبروك! لقد أتممت إنشاء الحساب. بإمكانك الآن تحميل تطبيق أواصر وتسجيل الدخول برقم الجوال المستخدم في انشاء الحساب، والبدء باستخدام التطبيق.',
+    'start_with_awaser' => 'ابدأ مع Awaser',
+    'payment_failed' => 'فشل استكمال الدفع',
+    'try_again' => 'حاول مرة أخرى',
+    'package_label' => ':attribute1 أشهر/:attribute2 ريال',
+    'months' => 'أشهر',
+    'member' => 'عضو',
+    'summary' => 'ملخص',
+    'subscription-hint' => 'مبلغ الاشتراك غير قابل للاسترداد لأي سبب كان',
+    'free' => 'مجاناً',
+    'member_included' => 'يشمل الأعضاء',
+    'plan_duration' => 'مدة الخطة',
+    'subscription_months' => ':attribute أشهر',
+    'checkout_pay_now' => 'Awaser ادفع الآن',
+    'type_of_account' => 'نوع الحساب',
+    'price' => 'سعر',
+    'sub_total' => 'المجموع الفرعي',
+    'total_amt' => 'المبلغ الإجمالي',
+    'vat' => 'ضريبة القيمة المضافة',
+    'total_apy_amt' => 'المبلغ الإجمالي للدفع',
+    'vat_no' => 'الرقم الضريبي',
+    'select_payment_method' => 'اختار طريقة الدفع :',
+    'appple_apy' => 'APPLEPAY',
+    'mada' => 'MADA',
+    'visa' => 'VISA MASTER',
+    'pay_now' => 'ادفع الآن',
+    'procced_to_checkout' => 'الدفع',
+    'note' => 'هذه دفعة لمرة واحدة وستنتهي بعد 3 أشهر',
+    'price_tag' => ':attribute ريال',
+    'saudi_currency' => 'ريال',
+    'currently_not_avaliable' => 'غير متوفر حالياً',
+    //'member_included' => 'Member Included',
+    'payment_link_expired' => 'انتهت صلاحية رابط الدفع الخاص بك.',
+]
+    
+];
