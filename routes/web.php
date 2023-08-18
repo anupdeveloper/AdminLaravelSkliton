@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/',[\App\Http\Controllers\HomeController::class, 'home'])->name('index');
+Route::get('/about',[\App\Http\Controllers\HomeController::class, 'about'])->name('about');
+Route::get('/product-detail/{id}',[\App\Http\Controllers\HomeController::class, 'product_detail'])->name('product-detail');
+Route::get('/contact',[\App\Http\Controllers\HomeController::class, 'contact'])->name('contact');
 
 Route::get('/terms-conditions', function () {
     return view('terms-conditions');
@@ -97,7 +98,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('user/export', [\App\Http\Controllers\Admin\UserController::class, 'userExport'])->name('admin.users.export');
         //add
         Route::get('user/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('admin.user.create');
-        Route::post('user/', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.user.store');
+        Route::post('user/save', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.user.store');
         //view
         Route::get('user/{id}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.user.show');
         //edit
@@ -134,8 +135,110 @@ Route::group(['middleware' => 'auth'], function () {
 // ADMIN
 
 Route::group(['prefix' => 'admin'], function () {
-
     Route::group(['prefix' => 'category'], function () {
         Route::get('/', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('admin.category.index');
+        Route::get('/add', [\App\Http\Controllers\Admin\CategoryController::class, 'add'])->name('admin.category.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\CategoryController::class, 'save'])->name('admin.category.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\CategoryController::class, 'edit'])->name('admin.category.edit');
+        Route::patch('{id}', [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('admin.category.update');
+        Route::post('{id?}', [\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('admin.category.destroy');
     });
+
+    Route::group(['prefix' => 'product'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ProductController::class, 'index'])->name('admin.product.index');
+        Route::get('/add', [\App\Http\Controllers\Admin\ProductController::class, 'add'])->name('admin.product.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\ProductController::class, 'save'])->name('admin.product.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\ProductController::class, 'edit'])->name('admin.product.edit');
+        Route::patch('{id}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('admin.product.update');
+        Route::post('{id?}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('admin.product.destroy');
+    });
+
+    Route::group(['prefix' => 'product'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ProductController::class, 'index'])->name('admin.product.index');
+        Route::get('/add', [\App\Http\Controllers\Admin\ProductController::class, 'add'])->name('admin.product.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\ProductController::class, 'save'])->name('admin.product.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\ProductController::class, 'edit'])->name('admin.product.edit');
+        Route::patch('{id}', [\App\Http\Controllers\Admin\ProductController::class, 'update'])->name('admin.product.update');
+        Route::post('{id?}', [\App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('admin.product.destroy');
+    });
+
+    Route::group(['prefix' => 'order'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.order.index');
+        //Route::get('/add', [\App\Http\Controllers\Admin\ProductController::class, 'add'])->name('admin.product.add');
+        //Route::post('/save', [\App\Http\Controllers\Admin\ProductController::class, 'save'])->name('admin.product.save');
+        Route::get('{id}/view', [\App\Http\Controllers\Admin\OrderController::class, 'view'])->name('admin.order.view');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\OrderController::class, 'edit'])->name('admin.order.edit');
+
+        Route::patch('{id}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('admin.order.update');
+        Route::post('{id?}', [\App\Http\Controllers\Admin\OrderController::class, 'destroy'])->name('admin.order.destroy');
+    });
+
+
+    Route::prefix('lead')->namespace('Admin')->group(function () {
+        Route::get('/index', [\App\Http\Controllers\Admin\LeadController::class, 'index'])->name('admin.lead.index');
+        Route::get('/getdata', [\App\Http\Controllers\Admin\LeadController::class, 'getdata'])->name('admin.lead.getdata');
+        
+        Route::get('/filter', [\App\Http\Controllers\Admin\LeadController::class, 'filter'])->name('admin.lead.filter');
+        //for uploading to database
+        Route::post('/leads-import',[\App\Http\Controllers\Admin\LeadController::class,'lead_import'])->name('admin.lead.import');
+        Route::get('/add', [\App\Http\Controllers\Admin\LeadController::class, 'add'])->name('admin.lead.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\LeadController::class, 'save'])->name('admin.lead.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\LeadController::class, 'edit'])->name('admin.lead.edit');
+        Route::post('{id}/update', [\App\Http\Controllers\Admin\LeadController::class, 'update'])->name('admin.lead.update');
+        Route::post('delete', [\App\Http\Controllers\Admin\LeadController::class, 'destroy'])->name('admin.lead.destroy');
+        Route::post('/assign-leads', [\App\Http\Controllers\Admin\LeadController::class, 'assignleads'])->name('admin.lead.assignleads');
+    });
+
+    Route::prefix('pages')->namespace('Admin')->group(function () {
+        Route::get('/index', [\App\Http\Controllers\Admin\PageController::class, 'index'])->name('admin.page.index');
+        Route::get('/getdata', [\App\Http\Controllers\Admin\PageController::class, 'getdata'])->name('admin.page.getdata');
+        Route::get('/add', [\App\Http\Controllers\Admin\PageController::class, 'add'])->name('admin.page.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\PageController::class, 'save'])->name('admin.page.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\PageController::class, 'edit'])->name('admin.page.edit');
+        Route::post('{id}/update', [\App\Http\Controllers\Admin\PageController::class, 'update'])->name('admin.page.update');
+        Route::post('{id?}/delete', [\App\Http\Controllers\Admin\PageController::class, 'destroy'])->name('admin.page.destroy');
+        
+    });
+
+    Route::prefix('workorder')->namespace('Admin')->group(function () {
+
+        Route::get('/index/{wo_type?}', [\App\Http\Controllers\Admin\WorkOrderController::class, 'index'])->name('admin.workorder.index');
+        Route::get('/getdata/{wo_type?}', [\App\Http\Controllers\Admin\WorkOrderController::class, 'getdata'])->name('admin.workorder.getdata');
+        
+        
+        
+
+        Route::get('/add-work-order', [\App\Http\Controllers\Admin\WorkOrderController::class, 'add_work_order'])->name('admin.workorder.add_work_order');
+        Route::get('/add', [\App\Http\Controllers\Admin\WorkOrderController::class, 'add'])->name('admin.workorder.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\WorkOrderController::class, 'save'])->name('admin.workorder.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\WorkOrderController::class, 'edit'])->name('admin.workorder.edit');
+        Route::post('{id}/update', [\App\Http\Controllers\Admin\WorkOrderController::class, 'update'])->name('admin.workorder.update');
+        Route::post('delete', [\App\Http\Controllers\Admin\WorkOrderController::class, 'destroy'])->name('admin.workorder.destroy');
+        Route::post('/assign-workorders', [\App\Http\Controllers\Admin\WorkOrderController::class, 'workorders'])->name('admin.workorder.assignworkorders');
+        Route::post('/get-user-slots', [\App\Http\Controllers\Admin\WorkOrderController::class, 'getUserslots'])->name('admin.workorder.userslots');
+        
+    });
+
+    Route::prefix('ticket')->namespace('Admin')->group(function () {
+        Route::get('/index', [\App\Http\Controllers\Admin\TicketController::class, 'index'])->name('admin.ticket.index');
+        Route::get('/getdata', [\App\Http\Controllers\Admin\TicketController::class, 'getdata'])->name('admin.ticket.getdata');
+        Route::get('/add', [\App\Http\Controllers\Admin\TicketController::class, 'add'])->name('admin.ticket.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\TicketController::class, 'save'])->name('admin.ticket.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\TicketController::class, 'edit'])->name('admin.ticket.edit');
+        Route::post('{id}/update', [\App\Http\Controllers\Admin\TicketController::class, 'update'])->name('admin.ticket.update');
+        Route::post('delete', [\App\Http\Controllers\Admin\TicketController::class, 'destroy'])->name('admin.ticket.destroy');
+    });
+
+    
+    Route::prefix('setting')->namespace('Admin')->group(function () {
+        Route::get('/index', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.setting.index');
+        Route::get('/getdata', [\App\Http\Controllers\Admin\SettingController::class, 'getdata'])->name('admin.setting.getdata');
+        Route::get('/add', [\App\Http\Controllers\Admin\SettingController::class, 'add'])->name('admin.setting.add');
+        Route::post('/save', [\App\Http\Controllers\Admin\SettingController::class, 'save'])->name('admin.setting.save');
+        Route::get('{id}/edit', [\App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('admin.setting.edit');
+        Route::post('{id}/update', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.setting.update');
+        Route::post('delete', [\App\Http\Controllers\Admin\SettingController::class, 'destroy'])->name('admin.setting.destroy');
+    });
+
+    
 });

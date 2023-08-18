@@ -26,6 +26,18 @@ class User extends Authenticatable
      */
    protected $guarded=[];
    protected $softDelete = true;
+   public $appends = [ 'lat','lng' ];
+   
+
+    public function getlatAttribute()
+    {
+        return floatval($this->attributes['lat']);
+    }
+
+    public function getlngAttribute()
+    {
+        return floatval($this->attributes['lng']);
+    }
 
     //    protected $appends=['about_me_arr'];
     /**
@@ -60,6 +72,7 @@ class User extends Authenticatable
     }
     // -----------------
 
+    
 
 
 }

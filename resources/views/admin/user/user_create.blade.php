@@ -2,381 +2,127 @@
 @extends('admin.layouts.layout')
 
 @section('content')
-<div class="container">
+<div class="content-header">
+    <div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-sm-6">
+        <h1 class="m-0">{{ $page_title }}</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+        {{-- <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Dashboard v1</li>
+        </ol> --}}
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<div class="container-fluid">
 
-
-    <h1>{{ __('api.admin.User.pages.add.labels.create_a_user') }}</h1>
 
     <!-- if there are creation errors, they will show here -->
-    <form action="{{ route('admin.user.store') }}" method="POST" enctype="multipart/form-data">
-        {{@csrf_field()}}
+    <form action="{{  route('admin.user.store') }}" method="POST" enctype="multipart/form-data" >
+        @method('POST')
+        @csrf
         <div class="row">
-
-                
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="account_type_id">{{ __('api.admin.User.labels.account_type_id') }}</label>
-        <input type="text" class="form-control" name="account_type_id" id="account_type_id" value="{{Request::old('account_type_id')}}">
-        @error('account_type_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="username">{{ __('api.admin.User.labels.username') }}</label>
-        <input type="text" class="form-control" name="username" id="username" value="{{Request::old('username')}}">
-        @error('username')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="dob">{{ __('api.admin.User.labels.dob') }}</label>
-        <input type="text" class="form-control" name="dob" id="dob" value="{{Request::old('dob')}}">
-        @error('dob')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="gender">{{ __('api.admin.User.labels.gender') }}</label>
-        <select class="form-control" name="gender" id="gender">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('gender'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('gender')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="email">{{ __('api.admin.User.labels.email') }}</label>
-        <input type="text" class="form-control" name="email" id="email" value="{{Request::old('email')}}">
-        @error('email')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="mobile">{{ __('api.admin.User.labels.mobile') }}</label>
-        <input type="text" class="form-control" name="mobile" id="mobile" value="{{Request::old('mobile')}}">
-        @error('mobile')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="nationality_id">{{ __('api.admin.User.labels.nationality_id') }}</label>
-        <select class="form-control" name="nationality_id" id="nationality_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('nationality_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('nationality_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="resident_country_id">{{ __('api.admin.User.labels.resident_country_id') }}</label>
-        <select class="form-control" name="resident_country_id" id="resident_country_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('resident_country_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('resident_country_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="region_id">{{ __('api.admin.User.labels.region_id') }}</label>
-        <select class="form-control" name="region_id" id="region_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('region_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('region_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="city_id">{{ __('api.admin.User.labels.city_id') }}</label>
-        <select class="form-control" name="city_id" id="city_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('city_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('city_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="family_origin_id">{{ __('api.admin.User.labels.family_origin_id') }}</label>
-        <select class="form-control" name="family_origin_id" id="family_origin_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('family_origin_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('family_origin_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="married_previously">{{ __('api.admin.User.labels.married_previously') }}</label>
-        <select class="form-control" name="married_previously" id="married_previously">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('married_previously'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('married_previously')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="currently_married">{{ __('api.admin.User.labels.currently_married') }}</label>
-        <select class="form-control" name="currently_married" id="currently_married">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('currently_married'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('currently_married')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="children_id">{{ __('api.admin.User.labels.children_id') }}</label>
-        <select class="form-control" name="children_id" id="children_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('children_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('children_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="height">{{ __('api.admin.User.labels.height') }}</label>
-        <input type="text" class="form-control" name="height" id="height" value="{{Request::old('height')}}">
-        @error('height')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="skin_color_id">{{ __('api.admin.User.labels.skin_color_id') }}</label>
-        <select class="form-control" name="skin_color_id" id="skin_color_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('skin_color_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('skin_color_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="education_id">{{ __('api.admin.User.labels.education_id') }}</label>
-        <select class="form-control" name="education_id" id="education_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('education_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('education_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="work_id">{{ __('api.admin.User.labels.work_id') }}</label>
-        <select class="form-control" name="work_id" id="work_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('work_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('work_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="smoking">{{ __('api.admin.User.labels.smoking') }}</label>
-        <input type="text" class="form-control" name="smoking" id="smoking" value="{{Request::old('smoking')}}">
-        @error('smoking')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="is_your_family_tribal">{{ __('api.admin.User.labels.is_your_family_tribal') }}</label>
-        <select class="form-control" name="is_your_family_tribal" id="is_your_family_tribal">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('is_your_family_tribal'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('is_your_family_tribal')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="tribe_id">{{ __('api.admin.User.labels.tribe_id') }}</label>
-        <select class="form-control" name="tribe_id" id="tribe_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('tribe_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('tribe_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="do_you_care_about_tribalism">{{ __('api.admin.User.labels.do_you_care_about_tribalism') }}</label>
-        <select class="form-control" name="do_you_care_about_tribalism" id="do_you_care_about_tribalism">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('do_you_care_about_tribalism'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('do_you_care_about_tribalism')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="do_you_have_flexibility_to_marry_a_married_man">{{ __('api.admin.User.labels.do_you_have_flexibility_to_marry_a_married_man') }}</label>
-        <select class="form-control" name="do_you_have_flexibility_to_marry_a_married_man" id="do_you_have_flexibility_to_marry_a_married_man">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('do_you_have_flexibility_to_marry_a_married_man'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('do_you_have_flexibility_to_marry_a_married_man')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-<div class="col-lg-12">
-    <div class="form-group">
-        <label for="hijab_type_id">{{ __('api.admin.User.labels.hijab_type_id') }}</label>
-        <select class="form-control" name="hijab_type_id" id="hijab_type_id">
-            <option value="">--SELECT--</option>
-             @if(isset($select) && $select)
-            @foreach($select as $row)
-            <option value="{{$row->id}}" {{($row->id==Request::old('hijab_type_id'))?'selected':''}}>{{$row->name}}</option>
-            @endforeach 
-            @endif 
-        </select>
-        @error('hijab_type_id')
-        <div><small class="text-danger">{{$message}}</small></div>
-        @enderror
-    </div>
-</div>
-
-            
-            <div class="col-lg-12">
+            <div class="col-md-6">
                 <div class="form-group">
-                    <button type="submit" class="btn btn-success">Add</button>
+                <label for="user_type">User Type</label>
+                <select class="form-control" name="user_type" id="user_type">
+                    <option value="">--SELECT--</option>
+                    @if(isset($user_types) && $user_types)
+                        @foreach($user_types as $row)
+                            <option @if(old('user_type') == $row) selected  @endif value="{{$row}}">{{strtoupper(str_replace('_',' ',$row))}}</option>
+                        @endforeach 
+                    @endif
+                </select>
                 </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" value="{{old('name')}}" class="form-control">
+                    @error('name')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="mobile">Phone</label>
+                    <input type="text" name="mobile" value="{{old('mobile')}}" class="form-control">
+                    @error('mobile')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="text" name="email" value="{{old('email')}}" class="form-control">
+                    @error('email')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" value="{{old('username')}}" class="form-control">
+                    @error('username')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" name="address" value="{{old('address')}}" class="form-control">
+                    @error('address')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="text" name="password" value="" class="form-control">
+                    @error('password')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div>
+            {{-- <div class="col-md-6">
+                <div class="form-group">
+                    <label for="username">Confirm Password</label>
+                    <input type="text" name="username" value="" class="form-control">
+                    @error('username')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div> --}}
+            {{-- <div class="col-md-6">
+                <div class="form-group">
+                    <label for="category_name">Upload Image</label>
+                    <input type="file" multiple name="image[]" value="" class="form-control">
+                   
+                </div>
+            </div> --}}
+            {{-- <div class="col-md-6">
+                <div class="form-group">
+                    <label for="category_name">Category Name</label>
+                    <input type="text" name="category_name" value="" class="form-control">
+                    @error('category_name')
+                    <div><small class="text-danger">{{$message}}</small></div>
+                    @enderror
+                </div>
+            </div> --}}
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                
+                <button type="submit" class="btn btn-primary">Save</button>
+                
             </div>
 
         </div>
@@ -387,6 +133,6 @@
 @endsection
 
 <script>
-    // CKEDITOR.replace('description1')
+    //CKEDITOR.replace('description1')
 </script>
 

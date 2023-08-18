@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\{User,UserPurchaseSubscription};
-use App\Traits\OtpTrait;
+use App\Traits\{OtpTrait,GeneralTrait};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,45 +17,23 @@ use Config;
 
 class AuthController extends Controller
 {
-    use OtpTrait;
+    use OtpTrait, GeneralTrait;
 
     public function register(Request $request)
     {
         $request->validate([
-            'mobile' => 'required|starts_with:5|size:9'
+            'name' => 'required',
+            'mobile' => 'required|digits:10',
+            'username' => 'required|unique:users,username',
+            'email' => 'required|email',
+            'password' => 'required|min:6'
         ],[
             'mobile.required'=>__('api.register.mobile.required'),
             'mobile.starts_with'=>__('api.register.mobile.starts_with'),
             'mobile.size'=>__('api.register.mobile.size'),
         ]);
 
-        
-        $user = User::where('mobile', $request->mobile)->first();
-        if($user) {
-
-           if($user->is_admin == 1) {
-            $logdata = [
-                'request_data' => $request->all(),
-                'response_data' => array('status' => 500,
-                                    'success' => false,
-                                    'message' => __('api.login.this_phone_number_is_used_as_admin'))
-            ];
-    
-            Helper::save_api_logs($logdata);
-                return [
-                    'status' => 500,
-                    'success' => false,
-                    'message' => __('api.login.this_phone_number_is_used_as_admin')
-                ];
-            }
-        }
-        // @create new user
-        // if (!$user) {
-        //     $user = User::create([
-        //         'mobile' => $request->mobile,
-        //         'password' => Hash::make($this->__generateOtpNumber())
-        //     ]);
-        // }
+       
 
         if($request->hasHeader('X-localization')) {
             $localization = $request->header('X-localization');
@@ -63,22 +41,32 @@ class AuthController extends Controller
             $localization = 'en';
         }
         
-        $user = User::create([
-            'mobile' => $request->mobile,
-            'password' => Hash::make($this->__generateOtpNumber()),
-            'default_language' => $localization
-        ]);
-        
+        try{
+            $user = User::create([
+                'name' => $request->name,
+                'mobile' => $request->mobile,
+                'username' => $request->username,
+                'email' => $request->email,
+                'user_type' => $request->user_type ? $request->user_type : 'user',
+                'password' => Hash::make($request->password),
+                //'default_language' => $localization
+            ]);
 
-        //@ send otp to this mobile
-        $otp_ob = $this->_sendOtp($user);
+            $token = $user->createToken('user_token')->plainTextToken;
+            $data = [
+                'token' => $token,
+            ];
+            //dd($data);
+            $message = 'You have registered successfully';
+            return $this->__sendResponse(200,true,$message,$data);
+
+        } catch(User $e) {
+            $message = 'Please contact admin';
+            return $this->__sendResponse(500,false,$message);   
+        }
+
+
         
-        $logdata = [
-            'request_data' => $request->all(),
-            'response_data' => $otp_ob
-        ];
-        Helper::save_api_logs($logdata);
-        return ($otp_ob);
     }
 
     public function verifyOtp(Request $request)
@@ -365,173 +353,67 @@ class AuthController extends Controller
     {
         $request->validate([
             //'username'=>'required|exists:users,username',
-            'mobile'=>'required|starts_with:5|digits:9',
+            'username'=>'required',
+            'password'=>'required',
         ],
         [
-            'mobile.required' => __('api.login.enter_your_phone_number'),
-            'mobile.starts_with' => __('api.login.mobile_number_must_start_with_05'),
-            'mobile.digits' => __('api.login.mobile_number_consists_of_10_digits')
+            //'mobile.required' => __('api.login.enter_your_phone_number'),
+            //'mobile.starts_with' => __('api.login.mobile_number_must_start_with_05'),
+            //'mobile.digits' => __('api.login.mobile_number_consists_of_10_digits'),
+            //'password.required' => 'Password field is required',
         ]);
 
-        $user = User::where('mobile', $request->mobile)->first();
+        $user = User::where('username', $request->username)->first();
         // @ check if user exists
-        $user_count = User::where('mobile', $request->mobile)
+        $user_count = User::where('username', $request->username)
                             ->whereNotNull('username')
-                            ->whereNotNull('account_type_id')
-                            ->whereNotNull('name')
-                            ->whereNotNull('email')
+                            //->whereNotNull('email')
                             ->count();
         //dd($user_count);                    
         if($user_count == 0) {
-            /*
-            $users = User::where('mobile', $request->mobile)->get();
-            $user_has_no_account_completed = false;
-            foreach($users as $user) {
-                if(
-                    !empty($user->username) and 
-                    !empty($user->account_type_id) and 
-                    !empty($user->name) and 
-                    !empty($user->email)
-                    )
-                {
-                    $user_has_no_account_completed = true;
-                    break;
-                } 
-            }
-            if($user_has_no_account_completed == false) {
-                
-            }
-            */
             $message = __('api.login.mobile_no_is_not_registered_with_us');
-
-            $message_data = Helper::getMessageByCode('NOT015');
-
-            $message_text_en = $message_data ? $message_data->message_value_en : $message;
-            $message_text_ar = $message_data ? $message_data->message_value_ar : $message;
-            
-            // send a sms
-            $sms_data = Helper::getMessageByCode('NOT024');
-
-            if($request->hasHeader('X-localization')) {
-                $localization = $request->header('X-localization');
-            } else {
-                $localization = 'ar';
-            }
-            //$prefered_lag = 'ar';
-
-            if($localization == "en") {
-                $type = 3;
-                $message = $sms_data ? $sms_data->message_value_en :  trans('api.common.please_register_on_our_site' ,[] , 'en') ;
-            } else {
-                $type = 4;
-                $message = $sms_data ? $sms_data->message_value_ar :  trans('api.common.please_register_on_our_site' ,[] , 'ar') ;
-            }
-            //dd($message);
-            $to = $request->mobile;
-            
-            Helper::sendSms($message,$to,$type);
-
-            return [
-                'status' => 500,
-                'success' => false,
-                'message' => $message_text_en,
-                'message_ar' => $message_text_ar
-            ];
-            
+            return $this->__sendResponse(500,false,$message);
         }
         
 
         if (!$user) {
-
             $message = __('api.login.mobile_no_is_not_registered_with_us');
-
-            $message_data = Helper::getMessageByCode('NOT015');  
-            $message_text_en = $message_data ? $message_data->message_value_en : $message;
-            $message_text_ar = $message_data ? $message_data->message_value_ar: $message;
-
-            $logdata = [
-                'request_data' => $request->all(),
-                'response_data' => array('success' => false,
-                                    'message' => $message_text_en,
-                                    'message_ar' => $message_text_ar)
-            ];
-            Helper::save_api_logs($logdata);
-            
-            return [
-                'success' => false,
-                'message' => $message_text_en,
-                'message_ar' => $message_text_ar
-            ];
+            return $this->__sendResponse(500,false,$message);
         }
 
         if($user) {
-
-            // if($request->hasHeader('X-localization')) {
-            //     $localization = $request->header('X-localization');
-            // } else {
-            //     $localization = 'en';
-            // }
-            // //update default lag
-            // User::where('id', $user->id)->update([
-            //     'default_language' => $localization
-            // ]);
-
-            //$user->default_language = $localization;
-            
-            User::where('id', $user->id)->update([
-                'device_type' => $request->device_type
-            ]);
-
-            if($user->is_admin == 1) {
-                $logdata = [
-                    'request_data' => $request->all(),
-                    'response_data' => array('status' => 500,
-                    'success' => false,
-                    'message' => __('api.login.this_phone_number_is_used_as_admin'))
-                ];
-                Helper::save_api_logs($logdata);
-                return [
-                    'status' => 500,
-                    'success' => false,
-                    'message' => __('api.login.this_phone_number_is_used_as_admin')
-                ];
+            if($user->user_type == 'admin') {
+                $message = __('api.login.mobile_no_is_not_registered_with_us');
+                return $this->__sendResponse(200,true,$message);
             }
 
-            if($user->account_blocked == 1) {
-                $message = __('api.login.your_account_is_blocked');
-                $message_data = Helper::getMessageByCode('NOT016');  
-                $message_text_en = $message_data ? $message_data->message_value_en : $message;
-                $message_text_ar = $message_data ? $message_data->message_value_ar: $message;
-
-                $logdata = [
-                    'request_data' => $request->all(),
-                    'response_data' => array('status' => 500,
-                    'success' => false,
-                    'message' => $message_text_en,
-                    'message_ar' => $message_text_ar)
+            $credentials = array('username' => $request->username , 'password' => $request->password);
+            $attempt = Auth::attempt($credentials);
+            if ($attempt) {
+            
+                User::where('id', $user->id)->update([
+                    'device_type' => $request->device_type
+                ]);
+                $token = $user->createToken('user_token')->plainTextToken;
+                $data = [
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'phone' => $user->mobile,
+                    'user_type' => $user->user_type,
+                    'email' => $user->email,
+                    'token' => $token,
                 ];
-                Helper::save_api_logs($logdata);
+                //dd($data);
+                $message = 'You have logged in successfully.';
+                return $this->__sendResponse(200,true,$message,$data);
 
-                return [
-                    'status' => 500,
-                    'success' => false,
-                    'message' => $message_text_en,
-                    'message_ar' => $message_text_ar
-                ];
+            } else {
+                $message = 'Wrong Username Or Password';
+                return $this->__sendResponse(200,false,$message);
             }
            
         }
-
-        //@sendOtp
-        $res = $this->_sendOtp($user);
-
-        $logdata = [
-            'request_data' => $request->all(),
-            'response_data' => $res
-        ];
-        Helper::save_api_logs($logdata);
-        //$res = ['success' => true, 'message' =>__('message.otp.send_successfully')];
-        return $res;
+        
     }
 
     public function logout(Request $request)

@@ -90,6 +90,12 @@
         .mt10 {
             margin-top: 10px
         }
+
+        .actions-btn {
+            display: inline-block;
+            float: right;
+            padding-bottom: 20px;
+        }
     </style>
 
     <div class="content-header">
@@ -113,6 +119,9 @@
         <div class="advance-filter">
             
         </div>
+        <div class="actions-btn">
+            <a class="btn btn-primary sm-btn" href="{{route("admin.user.create")}}" >Add New</a>
+        </div>
         {{-- <a href="javascript:void(0);" onclick="export_users()" >Export All</a>
         <div style="">
             <span id="processing"></span>
@@ -122,12 +131,12 @@
                 <thead>
                 <tr>
                     <th>{{ __('api.admin.User.labels.name') }}</th>
-                    <th>Username</th>
+                    <th>Username/Email</th>
                     
-                    <th>{{ __('api.admin.User.labels.email') }}</th>
+                    
                     <th>{{ __('api.admin.User.labels.mobile') }}</th>
-
-                    <th class='notexport'>Send Notification</th>
+                    <th>Address</th>
+                    <th class='notexport'>User Type</th>
                     <th class='notexport' width="100px">Action</th>
                 </tr>
                 </thead>
@@ -346,24 +355,22 @@
                 serverSide: true,
                 "stateSave": true,
                 ajax: {
-                    url: "{{ route('admin.user.index') }}",
-                    data: function (d) {
-                        d.search = $('#search').val();
-                    }
+                    url: "{{ route('admin.user.index') }}"
                 },
                 columns: [
-                    {data: 'name', name: 'name'},
-                    {data: 'username', name: 'username'},
-                    {data: 'email', name: 'email'},
-                    {data: 'mobile', name: 'mobile'},
-                    {data: 'send_notification', name: 'send_notification', searchable: false},
-                    {data: 'action', name: 'action', orderable: false, searchable: false},
+                    {data: 'name', name: 'name', "orderable": true},
+                    {data: 'username', name: 'username', "orderable": true},
+                    {data: 'mobile', name: 'mobile', "orderable": true},
+                    {data: 'address', name: 'address', "orderable": true},
+                    {data: 'user_type', name: 'user_type', "orderable": true},
+                    {data: 'action', name: 'action'},
                 ],
-                searchBuilder:
-                    {
-                        columns: [0, 1, 3, 4]
-                    },
-                dom: 'Blrtip',
+                "order": [[0, "asc"]],
+                // searchBuilder:
+                //     {
+                //         columns: [0, 1, 2, 3, 4]
+                //     },
+                //dom: "lBfrtip",
                 buttons: [
                     {
                         text: 'Export Records',
