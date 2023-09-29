@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Traits\UserTrait;
 use Illuminate\Http\Request;
 use App\Models\{PersonalityDimension, UserYellowConnections, UserRedConnections, UserFamilyPersonalityDimension};
-use App\Models\{CommonIcon, User, UserPurchaseSubscription, Transaction, Connection, Message};
+use App\Models\{CommonIcon, User, UserPurchaseSubscription, Transaction, Connection, Message,Ticket};
 use App\Models\UserProfileImage;
 use App\Rules\Base64FileMaxSize;
 use App\Rules\Base64FileType;
@@ -30,35 +30,43 @@ use PDF;
 use Illuminate\Support\Facades\Crypt;
 use App\Http\Controllers\Api\ConnectionController;
 use Config;
+//use Twilio\Rest\Client;
 
 class UserController extends Controller
 {
     use UserTrait, Base64FileTrait;
+
+    // public function makeCall(Request $request)
+    // {
+    //     $sid = env("TWILIO_SID");
+    //     $token = env("TWILIO_AUTH_TOKEN");
+    //     $twilio = new Client($sid, $token);
+
+    //     $call = $twilio->calls
+    //                 ->create("+917688019332", // to
+    //                     env("TWILIO_NUMBER"), // from
+    //                     [
+    //                         "twiml" => "<Response><Say>Ahoy, World!</Say></Response>"
+    //                     ]
+    //                 );
+    //     return [
+    //         'success' => true,
+    //     ];
+    // }
 
     public function getUserInfo(Request $request, $user_id = null)
     {
 
         if (!empty($user_id)) {
             $user = User::find($user_id);
-            $all_detail = Helper::user_all_detail($user);
+            
         } else {
-            $user = $request->user();
-            $all_detail = Helper::user_all_detail($user, 1);
+            $user_id = $request->user()->id;
+            $user = User::select('id','name','email','user_type','username','mobile','address','lat','lng')->find($user_id);
         }
-
-
-        
-
-        $logdata = [
-            'request_data' => $request->all(),
-            'response_data' => array('success' => true,
-            'user' => $all_detail)
-        ];
-        Helper::save_api_logs($logdata);
-
         return [
             'success' => true,
-            'user' => $all_detail
+            'user' => $user
         ];
     }
 
@@ -240,121 +248,13 @@ class UserController extends Controller
         if (empty($selected_user_id)) {
             $user = $request->user();
         } else {
-            $user = User::find($selected_user_id);
+            $user = User::select('username','name','email','mobile','address')->find($selected_user_id);
         }
-
-
-
-        // return $user;
-
-        //@ account type
-        if (!$user->account_type_id) {
-            $request->validate([
-                'account_type_id' => 'required|exists:account_types,id'
-            ], [
-                'account_type_id.required' => __('api.set_profile_info.form_fields.account_type_id.required'),
-                'account_type_id.exists' => __('api.set_profile_info.form_fields.account_type_id.exists'),
-            ]);
-            $user->update(['account_type_id' => $request->account_type_id]);
-        }
-
-        if ($request->account_type_id == 2 || $request->account_type_id == 1) { // only case of individual
-            $user_family = UserFamily::where('user_default_id', $user->id)->first();
-            //dd($user_family);
-            if (!$user_family) {
-                $user_family = UserFamily::create(['user_id' => $user->id, 'user_default_id' => $user->id]);
-            }
-        }
-
-        // @name
-        if ($user->account_type_id == 2 && !$user_family->name || $user->account_type_id == 1 && !$user->name) {
-
-
-            $request->validate([
-                'name' => 'required',
-            ], [
-                'name.required' => __('api.set_profile_info.form_fields.name.required'),
-                'name.max' => __('api.set_profile_info.form_fields.name.max'),
-                'name.min' => __('api.set_profile_info.form_fields.name.min'),
-                // 'username.required'=>__('api.set_profile_info.form_fields.username.required'),
-                // 'username.unique'=>__('api.set_profile_info.form_fields.username.unique'),
-            ]);
-            if ($user->account_type_id == 1) {
-                $user->update(['name' => $request->name]);
-            } else {
-                $user->update(['name' => $request->name]);
-                $user_family->update(['name' => $request->name]);
-            }
-        }
-
-        // return $request;
-
-        // @ username fields
-        if (!$user->username) {
-            $request->validate([
-                //'name'=>'required|min:4|max:20',
-                'username' => ['required', 'starts_with:@', 'unique:users,username,' . $user->id, new StrMaxNumber(4)]
-            ], [
-                //'name.required'=>__('api.set_profile_info.form_fields.name.required'),
-                //'name.max'=>__('api.set_profile_info.form_fields.name.max'),
-                //'name.min'=>__('api.set_profile_info.form_fields.name.min'),
-                'username.required' => __('api.set_profile_info.form_fields.username.required'),
-                'username.unique' => __('api.set_profile_info.form_fields.username.unique'),
-            ]);
-
-            //$user_family->update(['name'=>$request->name]);
-            $user->update(['username' => $request->username]);
-        }
-        // return $request;
-        // @ email fields
-        if (!$user->email) {
-            $request->validate([
-                'email' => 'required|email',
-
-            ], [
-
-                'email.required' => __('api.set_profile_info.form_fields.email.required'),
-                'email.email' => __('api.set_profile_info.form_fields.email.email'),
-            ]);
-            $user->update(['email' => $request->email]);
-        }
-        //dd('55');
-        // @ dob fields
-
-        if (($user->account_type_id == 2) && !$user_family->dob) {
-            $request->validate([
-                'dob' => 'required|date|before:' . now()->subYears(17)->toDateString(),
-
-            ], [
-                'dob.required' => __('api.set_profile_info.form_fields.dob.required'),
-                'dob.date' => __('api.set_profile_info.form_fields.dob.date'),
-                'dob.before' => __('api.set_profile_info.form_fields.dob.before'),
-            ]);
-            $user_family->update(['dob' => $request->dob]);
-        }
-        // @ gender [male,female,other]
-        if (($user->account_type_id == 2) && !$user_family->gender) {
-            $request->validate([
-                'gender' => 'required|in:male,female,other',
-
-            ], [
-                'gender.required' => __('api.set_profile_info.form_fields.gender.required'),
-                'gender.in' => __('api.set_profile_info.form_fields.gender.in'),
-            ]);
-            $user_family->update(['gender' => $request->gender]);
-        }
-
-        $logdata = [
-            'request_data' => $request->all(),
-            'response_data' => array('success' => true,
-            'user' => $user->load('user_default_info'))
-        ];
-        Helper::save_api_logs($logdata);
 
 
         return $res = [
             'success' => true,
-            'user' => $user->load('user_default_info')
+            'user' => $user
         ];
     }
 
@@ -412,434 +312,27 @@ class UserController extends Controller
     public function userProfileUpdate(Request $request)
     {
         $user = $request->user();
-        $user_family = UserFamily::where('user_default_id', $user->id)->first();
-        $personality_dimensions = PersonalityDimension::all();
-        // return $personality_dimensions;
+        
         $request->validate([
-            'name' => ($user->account_type_id == 1) ? 'required' : 'nullable',
-            'gender' => ($user->account_type_id == 1) ? 'required' : 'nullable',
-            'dob' => ($user->account_type_id == 1) ? 'required' : 'nullable',
-            // 'profile_image'=>'null',
-            // 'personality_dimensions' => 'required|array',
-            // 'personality_dimensions.*.id' => 'required',
-            // 'personality_dimensions.*.value' => 'required|numeric ',
-
-            //'status'=>'required',
-            'region_id' => 'nullable',
-            'bio' => 'required',
-            'nationality_id' => 'nullable',
-            'resident_country_id' => 'nullable',
-            'family_origin_id' => 'nullable',
-            'married_previously' => 'nullable',
-            'currently_married' => 'nullable',
-            'children_id' => 'nullable',
-            'height' => 'nullable',
-            'skin_color_id' => 'nullable',
-            //'body_appearence'=>'required',
-            'education_id' => 'nullable',
-            'work_id' => 'nullable',
-            'do_you_allow_talking_before_marriage' => 'nullable',
-            'smoking' => 'nullable',
-            'is_your_family_tribal' => 'nullable',
-            'tribe_id' => 'nullable',
-            //'do_you_care_about_tribalism'=>'required',
-            'hijab_type_id' => 'nullable',
-            //'accept_poligamy'=>'required',
-        ], [
-            // 'profile_image.required'=>__('api.user_profile_update.profile_image.required'),
-            //'status.required'=>__('api.user_profile_update.status.required'),
-            'region_id.required' => __('api.user_profile_update.region_id.required'),
-            'bio.required' => __('api.user_profile_update.bio.required'),
-            'nationality_id.required' => __('api.user_profile_update.nationality_id.required'),
-            'resident_country_id.required' => __('api.user_profile_update.resident_country_id.required'),
-            'family_origin_id.required' => __('api.user_profile_update.family_origin_id.required'),
-            'married_previously.required' => __('api.user_profile_update.married_previously.required'),
-            'currently_married.required' => __('api.user_profile_update.currently_married.required'),
-            'children_id.required' => __('api.user_profile_update.children_id.required'),
-            'height.required' => __('api.user_profile_update.height.required'),
-            'skin_color_id.required' => __('api.user_profile_update.skin_color_id.required'),
-            //'body_appearence.required'=>__('api.user_profile_update.body_appearence.required'),
-            'education_id.required' => __('api.user_profile_update.education_id.required'),
-            'work_id.required' => __('api.user_profile_update.work_id.required'),
-            //'religion_id.required'=>__('api.user_profile_update.religion_id.required'),
-            'smoking.required' => __('api.user_profile_update.smoking.required'),
-            'is_your_family_tribal.required' => __('api.user_profile_update.is_your_family_tribal.required'),
-            'tribe_id.required' => __('api.user_profile_update.tribe_id.required'),
-            'other.required' => __('api.user_profile_update.other.required'),
-            'do_you_care_about_tribalism.required' => __('api.user_profile_update.do_you_care_about_tribalism.required'),
-            'hijab_type_id.required' => __('api.user_profile_update.hijab_type_id.required'),
-            'accept_poligamy.required' => __('api.user_profile_update.accept_poligamy.required'),
+            'name' => 'required',
+            'mobile' => 'required|digits:10',
+            'address' => 'required',
+            'email' => 'required|email|unique:users,email,'.$user->id,
         ]);
-
-
-        // return $request;
-
-        $dt_personality_dimensions = $request->personality_dimensions;
-        // return $dt_personality_dimensions;
-        $same = [];
-        if (isset($dt_personality_dimensions) && count($dt_personality_dimensions)) {
-            foreach ($dt_personality_dimensions as $pd) {
-                if ($pd['value'] == 3) {
-                    $same[] = $pd['id'];
-                }
-            }
-        }
-        // return $same;
-        if (count($same) == count($dt_personality_dimensions)) {
-            $logdata = [
-                'request_data' => $request->all(),
-                'response_data' => array('errors' => array('personality_dimensions' => 'all values should not be same as 3'))
-            ];
-            Helper::save_api_logs($logdata);
-
-            return response([
-                'errors' => [
-                    'personality_dimensions' => ['all values should not be same as 3']
-                ],
-            ], 422);
-        }
-
-
-        //@ update personality dimensions
-        if ($user->account_type_id == 2) {
-            if (isset($dt_personality_dimensions) && count($dt_personality_dimensions)) {
-                foreach ($dt_personality_dimensions as $pd) {
-                    $db_user_pd = UserPersonalityDimension::where([
-                        'user_id' => $user->id,
-                        'personality_dimension_id' => $pd['id']
-                    ])->first();
-                    if ($db_user_pd) {
-                        $db_user_pd->update(['point' => $pd['value']]);
-                    } else {
-                        $db_user_pd = UserPersonalityDimension::create([
-                            'user_id' => $user->id,
-                            'personality_dimension_id' => $pd['id'],
-                            'point' => $pd['value']
-                        ]);
-                    }
-                }
-            }
-        }
-
-        if ($user->account_type_id == 1) {
-            if (isset($dt_personality_dimensions) && count($dt_personality_dimensions)) {
-                foreach ($dt_personality_dimensions as $pd) {
-                    $db_user_pd = UserFamilyPersonalityDimension::where([
-                        'user_family_id' => $user_family->id,
-                        'personality_dimension_id' => $pd['id']
-                    ])->first();
-                    if ($db_user_pd) {
-                        $db_user_pd->update(['point' => $pd['value']]);
-                    } else {
-                        $db_user_pd = UserFamilyPersonalityDimension::create([
-                            'user_family_id' => $user_family->id,
-                            'personality_dimension_id' => $pd['id'],
-                            'point' => $pd['value']
-                        ]);
-                    }
-                }
-            }
-        }
-
-
-        // //@ update profile image
-
-        // if ($user->account_type_id==1) {
-        //     if($request->has('family_profile_img')) { 
-
-
-        //         if ($request->family_profile_img) {
-
-        //             //$path = $this->_base64fileUpload($request->family_profile_img, '/profile_img');
-        //             $path = $this->_normalFileUpload($request->family_profile_img,'/profile_img');
-        //             $total_pic_count = UserProfileImage::where('user_id',$user->id)
-        //                                             ->where('is_default',1)
-        //                                             ->count();
-
-        //             if($total_pic_count) {
-        //                 $user_profile_img = UserProfileImage::where('user_id',$user->id)
-        //                 ->where('is_default',1)
-        //                 ->update([
-        //                     'profile_img' => $path,
-        //                     ]);
-        //             } else{
-
-        //                 // return $path;
-        //                 $user_profile_img = UserProfileImage::create([
-        //                     'user_id' => $user->id,
-        //                     'profile_img' => $path,
-        //                     'is_default' => 1
-        //                 ]);
-        //             }
-
-        //         }
-        //     } else {
-        //         $path = '/profile_img/dummy_profile.png';
-        //         $user_profile_img = UserProfileImage::create([
-        //             'user_id' => $user->id,
-        //             'profile_img' => $path,
-        //             'is_default' => 1
-        //         ]);
-        //     }
-        // } 
-
-        // if ($user->account_type_id==2) {
-        //     if($request->has('individual_profile_img')) { // individaul_profile_img
-        //         // $request->validate([
-        //         //     'individual_profile_img' => ['required', new Base64FileType, new Base64FileMaxSize(5120)]
-        //         // ]);
-
-        //         if ($request->individual_profile_img) {
-
-        //             //$path = $this->_base64fileUpload($request->individual_profile_img, '/profile_img');
-        //             $path = $this->_normalFileUpload($request->individual_profile_img,'/profile_img');
-        //             $total_pic_count = UserProfileImage::where('user_id',$user->id)
-        //                                             ->where('is_default',1)
-        //                                             ->count();
-
-        //             if($total_pic_count) {
-
-        //                 $user_profile_data = UserProfileImage::where('user_id',$user->id)->first();
-        //                 if($user_profile_data) {
-        //                     $user_profile_img = UserProfileImage::
-        //                     where('id',$user_profile_data->id)
-        //                     ->update([
-        //                         'profile_img' => $path,
-        //                         'is_default' => 1
-        //                     ]);
-        //                 } 
-
-        //             } else{
-
-        //                 // return $path;
-        //                 $user_profile_img = UserProfileImage::create([
-        //                     'user_id' => $user->id,
-        //                     'profile_img' => $path,
-        //                     'is_default' => 1
-        //                 ]);
-        //             }
-
-        //         }
-        //     } else {
-        //         $path = '/profile_img/dummy_profile.png';
-        //         $user_profile_img = UserProfileImage::create([
-        //             'user_id' => $user->id,
-        //             'profile_img' => $path,
-        //             'is_default' => 1
-        //         ]);
-        //     }
-        // } 
-
-
 
 
         $req_data = $request->only(
             'name',
-            'gender',
-            'dob',
-            'status',
-            //  'region_id',
-            'bio',
-            // 'nationality_id',
-            // 'resident_country_id',
-            // 'family_origin_id',
-            'married_previously',
-            'currently_married',
-            'children_id',
-            'height',
-            'skin_color_id',
-            'body_appearence',
-            'education_id',
-            'work_id',
-            'religion_id',
-            'smoking',
-            // 'is_your_family_tribal',
-            'sect_id',
-            'other',
-            'do_you_care_about_tribalism',
-            'hijab_type_id',
-            'accept_poligamy',
-            'does_she_or_he_has_flexibility_to_marry_a_married_man'
+            'mobile',
+            'address',
+            'email'
         );
 
-        //    @update master user table
-        $req_master_data = $request->only(
-            'live_in_region_id',
-            'live_in_city_id',
-            'saudi_family_origin_region_id',
-            'saudi_family_origin_city_id',
-            'nationality_id',
-            'resident_country_id',
-            'family_origin_id',
-            'saudi_family_origin_id',
-            'is_your_family_tribal',
-            'tribe_id',
-            //'bio'
-        );
-
-        if ($request->nationality_id == 195) {
-            $req_master_data['saudi_family_origin_id'] = '';
-            $req_master_data['family_origin_id'] = $request->family_origin_id;
-        } else {
-            $req_master_data['family_origin_id'] = $request->family_origin_id;
-            $req_master_data['saudi_family_origin_id'] = '';
-        }
-
-        if (!empty($request->resident_country_id == 195)) {
-            $req_master_data['live_in_region_id'] = $request->live_in_region_id ? $request->live_in_region_id : '';
-            $req_master_data['live_in_city_id'] = $request->live_in_city_id ?  $request->live_in_city_id : '';
-        }
-
-        if (!empty($request->family_origin_id == 195)) {
-            $req_master_data['saudi_family_origin_region_id'] = $request->saudi_family_origin_region_id ? $request->saudi_family_origin_region_id : '';
-            $req_master_data['saudi_family_origin_city_id'] = $request->saudi_family_origin_city_id ? $request->saudi_family_origin_city_id : '';
-        }
-
-        if ($user->account_type_id == 2) {
-            $req_master_data['bio'] = $request->bio;
-            $req_master_data['live_in_city_id'] = $request->live_in_city_id;
-        }
-        if ($user->account_type_id == 1) {
-            $req_master_data['bio'] = $request->family_bio;
-            $req_master_data['live_in_city_id'] = $request->live_in_city_id;
-            $req_master_data['about_family'] = $request->about_family;
-            $req_master_data['do_you_care_about_tribalism'] = $request->do_you_care_about_tribalism;
-            $req_master_data['do_you_allow_talking_before_marriage'] = $request->do_you_allow_talking_before_marriage;
-        }
-        $req_master_data['is_completed'] = 1;
-
-        if ($user->is_completed == 0) {
-            $user->update($req_master_data); // only for first timme else for add member
-        }
-
-
-        $req_data['user_id'] = $user->id;
-        if (!empty($request->height)) {
-            $step = $request->step;
-            $height_min;
-            if (is_array($request->height)) {
-                $height_min = $request->height[0];
-                $max_height = $height_min + $request->step;
-                $height_label = $height_min . '-' . $max_height . ' cm';
-            } else {
-                $height_min = $request->height;
-                $max_height = $height_min + $request->step;
-                $height_label = $height_min . '-' . $max_height . ' cm';
-            }
-            $req_data['height'] = $height_label;
-            $req_data['height_min'] = $height_min;
-            $req_data['height_max'] = $max_height;
-        }
-
-
-        if ($user->account_type_id == 1) {
-
-            // update family member
-            //dd($user_family);
-            $new_family_member = UserFamily::where('id', $user_family->id)->update($req_data);
-            //($req_data);
-            //add image for member
-            // $family_user_id = $user_family->id;
-            // //dd($family_user_id);
-            // $family_user=UserFamily::where('id',$user_family->id)->first();
-            // $profile_pic = [];
-            // $total_pic_count = UserFamilyProfileImage::where('user_family_id',$user_family->id)->where('is_default',1)->count();
-            // if($total_pic_count) {
-
-
-            //         if(isset($request->member_profile_img)) {
-            //             $image = $request->member_profile_img;
-            //             if (!empty($image)) {
-            //                 //$path = $this->_base64fileUpload($image, '/family_profile_img');
-            //                 $path = $this->_normalFileUpload($image,'/family_profile_img');
-            //                 // return $path;
-            //                     $user_profile_img = UserFamilyProfileImage::where('user_family_id',$family_user_id)
-            //                     ->where('is_default',1)
-            //                     ->update([
-            //                         'profile_img' => $path,
-            //                     ]);
-            //             }
-
-            //         } else {
-            //             $path = '/family_profile_img/dummy_profile.png';
-            //             $user_profile_img = UserFamilyProfileImage::create([
-            //                 'user_family_id' => $family_user_id,
-            //                 'profile_img' => $path,
-            //                 'is_default' => 1
-            //             ]);
-            //         }
-
-            // } else {
-            //     if(isset($request->member_profile_img)) {
-            //         $image = $request->member_profile_img;
-            //         if (!empty($image)) {
-            //             //$path = $this->_base64fileUpload($image, '/family_profile_img');
-            //             $path = $this->_normalFileUpload($image,'/family_profile_img');
-            //             // return $path;
-            //             $user_profile_img = UserFamilyProfileImage::create([
-            //                 'user_family_id' => $family_user_id,
-            //                 'profile_img' => $path,
-            //                 'is_default' => 1
-            //             ]);
-            //         }
-
-            //     } else {
-            //         $path = '/family_profile_img/dummy_profile.png';
-            //         $user_profile_img = UserFamilyProfileImage::create([
-            //             'user_family_id' => $family_user_id,
-            //             'profile_img' => $path,
-            //             'is_default' => 1
-            //         ]);
-            //     }
-            // }
-
-        } else {
-            // update individual
-            $user_family->update($req_data);
-        }
-
-        $user_id = Auth::user()->id;
-        $user = User::find($user_id);
-
-
-
-        $verfied_data = Helper::user_all_detail($user);
-
-        if ($user->is_completed == 0 && $user->account_type_id == 1) {
-            $message_data = Helper::getMessageByCode('NOT013');
-        }
-        if ($user->is_completed == 1 && $user->account_type_id == 1) {
-            $message_data = Helper::getMessageByCode('NOT014');
-        }
-        if ($user->is_completed == 0 && $user->account_type_id == 2) {
-            $message_data = Helper::getMessageByCode('NOT013');
-        }
-        if ($user->is_completed == 1 && $user->account_type_id == 2) {
-            $message_data = Helper::getMessageByCode('NOT013');
-        }
-        $message = '';
-        $prefered_lag = Auth::user()->default_language ? Auth::user()->default_language : 'en';
-        if ($prefered_lag == 'en') {
-            $message_text = $message_data ? $message_data->message_value_en : $message;
-        } else {
-            $message_text = $message_data ? $message_data->message_value_ar : $message;
-        }
-        $message = $message_text;
-
-        $logdata = [
-            'request_data' => $request->all(),
-            'response_data' => array('success' => true,
-            'data' => $verfied_data,
-            'member_id' => $user_family->id,
-            'message' => $message)
-        ];
-        Helper::save_api_logs($logdata);
+        User::where('id',$user->id)->update($req_data);
 
         return [
             'success' => true,
-            'data' => $verfied_data,
-            'member_id' => $user_family->id,
-            'message' => $message
+            'data' => $req_data,
         ];
     }
 
@@ -4469,6 +3962,35 @@ class UserController extends Controller
             'status' => true,
             'message' => 'Payment link is sent successfully.',
             'data' => $message_payment
+        ];
+    }
+
+    public function create_complaint(Request $request)
+    {
+        $user_id = Auth::user()->id;
+        if(!empty($request->image)) {
+            $path = $this->_normalFileUpload($request->image, '/product',[600,600]);
+        }
+
+        $data = [
+            'user_id' => $user_id,
+            'title' => $request->desc,
+            'description' => $request->desc,
+            'category_id' => $request->category,
+            'image' => $path
+        ];
+        $model = Ticket::create($data);
+
+        $quniue_no = 'T'.date('Ymd').$model->id;
+        $model->where('id',$model->id)->update(
+            [
+                'ticket_no' => $quniue_no
+            ]
+        );
+        return $response = [
+            'status' => true,
+            'message' => 'Ticket is created successfully.',
+            'data' => $data
         ];
     }
 }

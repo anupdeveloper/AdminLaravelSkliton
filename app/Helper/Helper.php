@@ -7,7 +7,7 @@ use App\Models\UserPurchaseSubscription;
 use App\Models\Connection;
 use App\Models\{CommonIcon, User, UserFamily, Message, UserFamilyProfileImage, UserProfileImage, UserLikesHideBlocked, Subscription};
 use App\Models\MasterEducational;
-use App\Models\{MasterChildren, MasterWork, SkinColor, UserRedConnections, UserYellowConnections};
+use App\Models\{TechnicianAssignSlot,Order,Ticket,MasterChildren, MasterWork, SkinColor, UserRedConnections, UserYellowConnections};
 use DB;
 use Storage;
 use Carbon\Carbon;
@@ -23,6 +23,40 @@ use Log;
 
 class Helper
 {
+    public static function background_colors(){
+        return [
+            '.bg-color-1',
+            '.bg-color-2',
+            '.bg-color-3',
+            '.bg-color-4',
+            '.bg-color-5',
+        ];
+    }
+
+    public static function get_new_tickets()
+    {
+        return Ticket::where('status',1)->count();
+    }
+
+    public static function get_new_orders()
+    {
+        return Order::where('order_status','pending')->count();
+    }
+
+    public static function is_slot_booked($id, $user_id)
+    {
+        return TechnicianAssignSlot::where('user_id', $user_id)
+                            ->where('slot_id', $id)
+                            ->whereDate('date', date('Y-m-d'))
+                            ->count();
+    }
+
+    public static function get_statuses()
+    {
+        return [
+            'created','assigned','inprogress','completed'
+        ];
+    }
     public static function custom_user_filter($list, $account_type, $search_keyword, $filter_option = [])
     {
         //dd($account_type);
@@ -401,6 +435,16 @@ class Helper
         $users_list = $users->pluck('user_id')->toArray(); // array of ads ids
         //dd($users_list);
         return count($users_list) > 0 ? $users_list : [];
+    }
+
+    public static function getQueryString($q)
+    {
+        
+        $query = str_replace(array('?'), array('\'%s\''), $q->toSql());
+        $query = vsprintf($query, $q->getBindings());
+        dump($query);
+        die;
+        
     }
 
     public static function ck_connection($logged_user_id, $user_id)

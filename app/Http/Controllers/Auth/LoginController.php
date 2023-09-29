@@ -60,7 +60,7 @@ class LoginController extends Controller
         $attempt = Auth::attempt($credentials);
         if ($attempt) {
             // Authentication passed...
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.user.index');
         } else {
             //dd($credentials);
             return redirect()->back()->withErrors(['msg' => trans('login.login_page.These_credentials_do_not_match_our_records')]);

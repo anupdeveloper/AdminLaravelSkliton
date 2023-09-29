@@ -11,13 +11,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Excel as ExcelClass;
 use Rap2hpoutre\FastExcel\FastExcel;
 
-use App\Models\{Notification, User, Message};
+use App\Models\{Notification, User, CustomerDetail, Message};
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+
 use App\Helper\Helper;
 
 //use DB;
@@ -73,17 +75,25 @@ class UserController extends Controller
 
 
         if ($request->ajax()) {
-            $user = User::select('*')
-                ->where('email', '!=', 'admin@admin.com')
-                ->where('is_admin', '0');
+            $user = User::select('*')->with(['customer_detail'])
+                //->where('email', '!=', 'admin@admin.com')
+                ->whereIn('user_type', ['normal_user','amc_user','user','paid_user']);
 
             if (1) {
+                
                 if (!empty($request->search)) {
-                    $user = $user->where('name', $request->search)
-                        ->orWhere('username', 'like', '%' . $request->search)
-                        ->orWhere('email', $request->search)
-                        ->orWhere('mobile', $request->search);
+                    $search = $request->search['value'];
+                    $user = $user->where(
+                            function($query) use ($search)  {
+                                return $query
+                                ->where('name','like', '%'.$search.'%')
+                                ->orWhere('mobile','like', '%'.$search.'%')
+                                ->orWhere('email','like', '%'.$search.'%');
+                            }
+                        );
                 }
+                $user = $user->latest();
+                //dd( $user);
                 
                 return Datatables::of($user)
                     ->setRowId(function ($row) {
@@ -93,17 +103,23 @@ class UserController extends Controller
                       return $row->name ? $row->name : '--';
                     })
                     ->addColumn('username', function ($row) {
-                        return $row->username ? $row->username : '--';
+                        $u_data = $row->username ? '<p> Username: '.$row->username.'</p>' : '<p>'.'--'.'</p>';
+                        $u_data .= $row->password ? '<p>Password: '.$row->password.'</p>' : '<p>'.'--'.'</p>';
+                        return $u_data;
                     })
                     ->addColumn('mobile', function ($row) {
-                        return $row->mobile ? $row->mobile : '--';
+                         $mobile1 = $row->mobile ? 'Pri: '.$row->mobile : '--';
+                         $mobile2 = $row->customer_detail ? 'Alt: '.$row->customer_detail->alt_mobile : '--';
+                         return $mobile1.'<br>'.$mobile2;
                     })
-                    ->addColumn('email', function ($row) {
-                        return $row->email ? $row->email : '--';
+                    ->addColumn('address', function ($row) {
+                        return $row->address ? $row->address : '--';
                     })
-                    ->addColumn('send_notification', function ($row) {
-                        return '<a class="btn btn-small btn-info btn-sm"
-                        onclick="send_notification(' . $row->id . ')">Send Notification</a>';
+                    ->addColumn('user_type', function ($row) {
+                        return strtoupper(str_replace('_',' ',$row->user_type));
+                    })
+                    ->addColumn('product_type', function ($row) {
+                        return strtoupper(str_replace('_',' ',$row->customer_detail->product_type));
                     })
                     ->addColumn('action', function ($row) {
 
@@ -115,16 +131,10 @@ class UserController extends Controller
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>';
 
-                        if (isset($row->account_type->id) && $row->account_type->id == 1) {
-
-                            $btn .= '<a class="btn btn-small btn-warning btn-sm"
-                            href="' . route("admin.user-family.index", ["family_head_user_id" => $row->id]) . '"><i class="fa fa-users" aria-hidden="true"></i></a>';
-                        }
-
-
+                        
                         return $btn;
                     })
-                    ->rawColumns(['username', 'name', 'mobile' , 'email' , 'send_notification', 'action'])
+                    ->rawColumns(['username', 'product_type', 'name', 'mobile' , 'address' , 'user_type', 'action'])
                     ->make(true);
 
             }
@@ -137,120 +147,150 @@ class UserController extends Controller
     }
 
    
-   
+   public function create()
+   {
+        $page_title = 'Add Customer';
+        //$categories = Category::all();
+        //$data = Product::select('*')->where('id',$id)->first();
+        $user_types = [
+            'amc_user','paid_user'
+        ];
+
+        $product_type = [
+            'Chimney','Water Purifier'
+        ];
+
+        
+        $amc_duration = [
+            1,2,3
+        ];
+        return view('admin.user.user_create', [
+            'page_title' => $page_title,
+            'user_types' =>$user_types,
+            'product_type' => $product_type,
+            'amc_duration' => $amc_duration
+            //'data' => $data,
+        ]);
+   }
+
+
+   public
+    function store(Request $request)
+    {
+        $fields = $request->validate(
+            [ 
+                //'category_id' => 'required',
+                'name' => 'required',
+                'password' => 'min:6',
+                'mobile' => 'required|digits:10',
+                'alt_mobile' => 'required|digits:10',
+                'email' => 'nullable|email|unique:users,email',
+                'username' => 'required|unique:users,username',
+                'address' => 'nullable',
+            ],
+            [
+                "category_id.required" => "This field is required",
+            ]
+        );
+
+        
+        
+
+        //dd($request->all());
+        //$fields['password'] = Hash::make($request->password);
+        $fields['password'] = $request->password;
+        $fields['user_type'] = $request->user_type;
+        unset($fields['alt_mobile']);
+        $model = User::create( $fields );
+        
+        CustomerDetail::create(
+            [
+                'user_id' => $model->id,
+                'alt_mobile' => $request->alt_mobile,
+                'user_type' => $request->user_type,
+                'product_type' => $request->product_type,
+                'no_services' => $request->amc_no_services,
+                'amc_duration' => $request->amc_duration,
+                'model_taken' => $request->model_taken,
+            ]
+        );
+
+        Session::flash('success', "User has been added successfully.");
+        return Redirect::to(route('admin.user.index'));
+    }
 
 
     public
     function edit($id)
     {
-        // get the shark
-        $user = User::with('members', 'members.profile_images_list', 'members.skin_detail', 'members.work_detail', 'members.education_detail', 'members.children_detail', 'members.sect_detail', 'members.hijab_detail', 'user_has_active_subscription')
-            ->where('users.id', $id)->with('account_type')->first();
+        $page_title = 'Edit Customer';
+        $user_types = [
+            'amc_user','paid_user'
+        ];
 
-        $account_types = AccountType::all();
-        $countries = Country::get();
-        $regions = MasterRegion::get();
-        $family_origins = FamilyOrigin::get();
-        $childrens = MasterChildren::get();
-        $heights = MasterHeight::get();
-        $skin_colors = SkinColor::get();
-        $educations = MasterEducational::get();
-        $works = MasterWork::get();
-        $tribes = MasterTribe::get();
-        $hijab_types = HijabType::get();
-        $cities = MasterCity::get();
-
-        // return $educations;
-
-        // return $countries;
-
-        // show the edit form and pass the shark
+        $product_type = [
+            'Chimney','Water Purifier'
+        ];
+        $data = User::with(['customer_detail'])->where('id',$id)->first();
+        //dd($data);
+        $amc_duration = [
+            1,2,3
+        ];
         return view('admin.user.user_edit', [
-            'user' => $user,
-            'account_types' => $account_types,
-            'countries' => $countries,
-            'regions' => $regions,
-            'family_origins' => $family_origins,
-            'childrens' => $childrens,
-            'heights' => $heights,
-            'skin_colors' => $skin_colors,
-            'educations' => $educations,
-            'works' => $works,
-            'tribes' => $tribes,
-            'hijab_types' => $hijab_types,
-            'cities' => $cities,
+            'page_title' => $page_title,
+            'user_types' =>$user_types,
+            'data' => $data,
+            'product_type' => $product_type,
+            'amc_duration' => $amc_duration
         ]);
+        
     }
 
     public
     function update(Request $request, $id)
     {
-        //$user=$request->user();
-        //$user = User::where(['user_id'=>$user->id,'id'=>$id])->first();
-        // dd($request->all());
+        
+        //dd($request->all());
         $user = User::find($id);
         $fields = $request->validate(
             [
-                //'account_type_id' => 'required',
-                'username' => 'required',
-                'email' => 'required',
-                'mobile' => 'required',
-                'nationality_id' => 'required',
-                'resident_country_id' => 'nullable',
-                'region_id' => 'nullable',
-                'city_id' => 'nullable',
-                'family_origin_id' => 'nullable',
-                'is_your_family_tribal' => 'nullable',
-                'tribe_id' => 'nullable',
-                'do_you_care_about_tribalism' => 'nullable',
-                'do_you_allow_talking_before_marriage' => 'nullable',
-                'about_family' => 'nullable',
+                'name' => 'required',
+                'password' => 'required|min:6',
+                'mobile' => 'required|digits:10',
+                'alt_mobile' => 'required|digits:10',
+                'email' => 'nullable|email|unique:users,email,'.$id,
+                'username' => 'required|unique:users,username,'.$id, 
+                'address' => 'nullable',
             ],
             [
 
-                "username.required" => __("api.admin.User.validation_msg.username.required"),
-                "email.required" => __("api.admin.User.validation_msg.email.required"),
-                "mobile.required" => __("api.admin.User.validation_msg.mobile.required"),
-                "nationality_id.required" => __("api.admin.User.validation_msg.nationality_id.required"),
-                "resident_country_id.required" => __("api.admin.User.validation_msg.resident_country_id.required"),
-                "region_id.required" => __("api.admin.User.validation_msg.region_id.required"),
-                "city_id.required" => __("api.admin.User.validation_msg.city_id.required"),
-
+                
             ]
         );
 
-
-        $user_families = [
-            'dob' => $request->dob,
-            'gender' => $request->gender,
-            'married_previously' => $request->married_previously,
-            'currently_married' => $request->currently_married,
-            'children_id' => $request->children_id,
-            'height' => $request->height,
-            'skin_color_id' => $request->skin_color_id,
-            'education_id' => $request->education_id,
-            'work_id' => $request->work_id,
-            'smoking' => $request->smoking,
-            'bio' => $request->bio,
-
-        ];
-
-
-        //if($files=$request->file('img')){
-        //Storage::disk('public')->delete($user->img);
-        //$fields['img']=$files->storePublicly('uploads','public');
-        //}
-
-        //dd($fields);
+        if(!empty($request->password)) {
+            //fields['password'] = Hash::make($request->password);
+            $fields['password'] = $request->password;
+        }
+        $fields['user_type'] = $request->user_type;
+        unset($fields['alt_mobile']);
         $user->update($fields);
 
-        $has_entry = UserFamily::where('user_default_id', $user->id)->first();
-
-        if ($has_entry) {
-            UserFamily::where('user_default_id', $user->id)->update($user_families);
-        }
-
-
+        CustomerDetail::updateOrCreate(
+            [
+                'user_id' => $user->id,
+               
+            ],
+            [
+                'user_type' => $request->user_type,
+                'alt_mobile' => $request->alt_mobile,
+                'product_type' => $request->product_type,
+                'no_services' => $request->amc_no_services,
+                'amc_duration' => $request->amc_duration,
+                'model_taken' => $request->model_taken,
+            ]
+        );
+        //dd($user);
         // redirect
         Session::flash('success', __('api.admin.User.message.edit.success'));
         return Redirect::to(route('admin.user.index'));
@@ -267,26 +307,10 @@ class UserController extends Controller
 
         $user = User::find($id);
 
-        User::where('id', $id)->update(['deleted_by' => Auth::user()->id]);
-        UserFamily::where('user_id', $id)->update(['deleted_by' => Auth::user()->id]);
-        UserFamily::where('user_id', $id)->delete();
-        //Storage::disk('public')->delete($user->img);
-
+        
         $user->delete();
 
-        Connection::where(function ($q) use ($id) {
-            $q->where('request_id', $id);
-        })->orWhere(function ($q) use ($id) {
-            $q->where('receiver_id', $id);
-        })
-            ->delete();
-
-        Message::where(function ($q) use ($id) {
-            $q->where('request_id', $id);
-        })->orWhere(function ($q) use ($id) {
-            $q->where('receiver_id', $id);
-        })
-            ->delete();
+        
 
         echo json_encode([
             'status' => 'success'

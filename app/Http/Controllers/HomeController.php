@@ -7,7 +7,7 @@ use App\Models\Subscription;
 use App\Models\UserTemp;
 use App\Models\HyperPaymentNotification;
 use Laravel\Sanctum\PersonalAccessToken;
-use App\Models\{Transaction, AccountType, User, UserFamily, Country, SkinColor, MasterEducational, MasterWork, MasterSect, MasterTribe, HijabType, PersonalityDimension, UserPersonalityDimension, UserFamilyPersonalityDimension};
+use App\Models\{Page,Product, Transaction, AccountType, User, UserFamily, Country, SkinColor, MasterEducational, MasterWork, MasterSect, MasterTribe, HijabType, PersonalityDimension, UserPersonalityDimension, UserFamilyPersonalityDimension};
 use App\Models\UserPurchaseSubscription;
 use App\Helper\Helper;
 use Devinweb\LaravelHyperpay\Facades\LaravelHyperpay;
@@ -48,6 +48,34 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
+    public function home(Request $request){
+        $data = Product::select('products.*','category.category_name')
+        ->leftJoin('category', 'category.id', '=', 'products.category_id')
+        ->with('product_images')->get();
+        //dd($data);
+        return view('pages.home', ['data' => $data]);
+    }
+
+    public function about(Request $request){
+        $data = Page::where('id',1)->first();
+        return view('pages.about', ['data' => $data]);
+    }
+
+    public function contact(Request $request){
+        $data = Page::where('id',2)->first();
+        return view('pages.contact', ['data' => $data]);
+    }
+
+    
+    public function product_detail(Request $request){
+        $id = $request->id;
+        $data = Product::select('products.*','category.category_name')
+        ->leftJoin('category', 'category.id', '=', 'products.category_id')
+        ->with('product_images')->where('products.id',$id)->first();
+        //dd($data);
+        return view('pages.product-detail', ['data' => $data]);
+    }
+
     public function index()
     {
         return view('home');

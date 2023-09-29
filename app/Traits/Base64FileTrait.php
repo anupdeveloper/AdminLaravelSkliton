@@ -92,7 +92,35 @@ trait Base64FileTrait
         //return $file->storePublicly($storage_path,'public');
     }
 
-    public function _normalFileUpload($file,$destination,array $extra = null)
+    public function _normalFileUpload($file,$destination,array $extra = [])
+    {
+      $extension = $file->getClientOriginalExtension();
+      $photo_name = $this->getRandomFileName($destination,$extension);
+        //   $exif = exif_read_data($file);
+        //     if(!empty($exif['Orientation'])) {
+        //         switch($exif['Orientation']) {
+        //             case 8:
+        //                 $file = imagerotate($file,90,0);
+        //                 break;
+        //             case 3:
+        //                 $file = imagerotate($file,180,0);
+        //                 break;
+        //             case 6:
+        //                 $file = imagerotate($file,-90,0);
+        //                 break;
+        //         }
+        //     }
+        // $file->move(storage_path('app/public'.$destination),$photo_name);
+      $image_resize = Image::make($file->getRealPath()); 
+      $image_resize->orientate();            
+      $image_resize->resize($extra[0], $extra[1], function ($constraint) {
+                $constraint->aspectRatio();
+      })->save(public_path($destination.'/'.$photo_name),70);
+        
+        return $destination .'/'.$photo_name;
+    }
+
+    public function _s3normalFileUpload($file,$destination,array $extra = null)
     {
       $extension = $file->getClientOriginalExtension();
       $photo_name = $this->getRandomFileName($destination,$extension);

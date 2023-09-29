@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Awaser</title>
+    <title>{{  env('APP_NAME') }}</title>
 
     <link rel="stylesheet" href="{{asset('/assets_front/style.css')}}">
     <link rel="shortcut icon" href="{{asset('/assets_admin/images/favicon-32x32.png')}}" type="image/x-icon">
@@ -92,6 +92,12 @@
     @stack('links')
     @stack('script-header')
     <style>
+        span.noti.badge.badge-danger {
+            position: absolute;
+            top: 3px;
+            right: 10px;
+            border-radius:10px;
+        }
         h1.page-title {
             font-size: 15px;
             margin-bottom: 30px;
@@ -111,6 +117,18 @@
             padding: 7px;
             color: #000;
             cursor: pointer;
+        }
+
+        .sm-btn {
+            padding: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-sm {
+            margin-right: 10px;
+            padding: 5px;
+            font-size: 10px;
         }
     </style>
 
@@ -147,7 +165,7 @@
                 <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
                    aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-bell fa-fw"></i>
-                    @if(Auth::check() && Auth::user()->username)
+                    @if(Auth::check())
                         @php
                         $notification = \App\Models\Notification::where('user_id', auth()->user()->id)->orderBy('created_at', 'Desc')->get();
                         @endphp
@@ -158,7 +176,7 @@
                 <!-- Dropdown - Alerts -->
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                     <span class="dropdown-header"> Notifications</span>
-                    @if( Auth::user()->username)
+                    @if( Auth::check() )
                         @foreach($notification as $key=>$value)
                             <a href="{{asset('users/'.$value->data)}}" class=" dropdown-item">
                                 <i class="fas fa-download mr-2"></i> {{$value->data}}
@@ -214,7 +232,7 @@
         <a href="{{ route('admin.dashboard') }}" class="brand-link">
             <img src="{{asset('/assets_front/img/logo.png')}}" alt="AdminLTE Logo"
                  class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">Awaser</span>
+            <span class="brand-text font-weight-light">{{  env('APP_NAME') }}</span>
         </a>
 
         <!-- Sidebar -->
@@ -373,40 +391,40 @@
 
 
 <script>
-    window.onload = function () {
-        let url = location.href
-        url = url.match(/https?:\/\/[a-z\.\:0-9]+\/[a-z\-]+\/[a-z\-]+/)[0]
-        // console.log('url_arr',url_arr);
-        let sidebar_anchors = document.querySelector('div[class="os-content"]')
-        console.log('windoe onload');
+    // window.onload = function () {
+    //     let url = location.href
+    //     url = url.match(/https?:\/\/[a-z\.\:0-9]+\/[a-z\-]+\/[a-z\-]+/)[0]
+    //     // console.log('url_arr',url_arr);
+    //     let sidebar_anchors = document.querySelector('div[class="os-content"]')
+    //     console.log('windoe onload');
 
-        let anchor = sidebar_anchors.querySelector(`a[href^="${url}"]`)
-        // console.log('anchor',anchor);
+    //     let anchor = sidebar_anchors.querySelector(`a[href^="${url}"]`)
+    //     // console.log('anchor',anchor);
 
-        if (anchor) {
-            anchor.setAttribute('class', 'nav-link active')
-            parent_li = anchor.parentElement.parentElement
+    //     if (anchor) {
+    //         anchor.setAttribute('class', 'nav-link active')
+    //         parent_li = anchor.parentElement.parentElement
 
-            if (parent_li && parent_li.classList.contains('nav-treeview')) {
-                console.log('nav-tree');
-                parent_li = parent_li.parentElement
-            } else {
-                parent_li = null
-            }
-            console.log('parent_li', parent_li);
-            parent_li_a = parent_li.querySelector('a[href="#"]')
-            console.log('parent_li_a', parent_li_a);
-            if (parent_li_a) {
-                parent_li.setAttribute('class', 'nav-item menu-is-opening menu-open')
+    //         if (parent_li && parent_li.classList.contains('nav-treeview')) {
+    //             console.log('nav-tree');
+    //             parent_li = parent_li.parentElement
+    //         } else {
+    //             parent_li = null
+    //         }
+    //         console.log('parent_li', parent_li);
+    //         parent_li_a = parent_li.querySelector('a[href="#"]')
+    //         console.log('parent_li_a', parent_li_a);
+    //         if (parent_li_a) {
+    //             parent_li.setAttribute('class', 'nav-item menu-is-opening menu-open')
 
-                console.log('parent_li_a', parent_li_a);
-                if (parent_li_a) {
-                    parent_li_a.setAttribute('class', 'nav-link active')
+    //             console.log('parent_li_a', parent_li_a);
+    //             if (parent_li_a) {
+    //                 parent_li_a.setAttribute('class', 'nav-link active')
 
-                }
-            }
-        }
-    }
+    //             }
+    //         }
+    //     }
+    // }
 
 
     // class Session{

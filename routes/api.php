@@ -25,19 +25,18 @@ Route::fallback(function(){
 
 Route::group(['middleware' => ['localization','log.route']], function () {
 
+    
+    Route::get('/make-call',[\App\Http\Controllers\Api\UserController::class,'makeCall'])->name('make.call');
+
+    Route::get('/get-status',[\App\Http\Controllers\Api\WorkOrderController::class,'get_status'])->name('get_status');
     /* Server Time */
     Route::get('/get-server-time',[\App\Http\Controllers\Api\MasterController::class,'get_server_time'])->name('get_server_time');
     /* Version No */
     Route::get('/get-version',[\App\Http\Controllers\Api\MasterController::class,'get_version'])->name('get_version');
     // hide subsription yes or no
-    Route::get('/show-subscription',[\App\Http\Controllers\Api\MasterController::class,'show_subscription'])->name('show_subscription');
-    Route::get('/under-maintenance',[\App\Http\Controllers\Api\MasterController::class,'under_maintenance'])->name('under_maintenance');
-        
     Route::get('/terms-and-condition',[\App\Http\Controllers\Api\MasterController::class,'terms_and_condition']);
 
-    Route::get('/countries',[\App\Http\Controllers\Api\MasterController::class,'countries'])->name('countries');
-    Route::get('/regions/{country_id?}',[\App\Http\Controllers\Api\MasterController::class,'regions'])->name('regions');
-    Route::get('/city-list/{region_id?}',[\App\Http\Controllers\Api\MasterController::class,'cityList'])->name('cities');
+   
 
     Route::get('/onboarding',[\App\Http\Controllers\Api\OnBoardingController::class,'onboarding'])->name('api_onboarding');
     Route::post('/register',[\App\Http\Controllers\Api\AuthController::class,'register'])->name('api_register');
@@ -102,6 +101,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => ['localization','log.route']], function () {
     Route::group(['middleware' => 'auth:sanctum'], function () {
+        
+        Route::post('/task-list/{date?}',[\App\Http\Controllers\Api\WorkOrderController::class,'task_list'])->name('task_list');
+        Route::post('/task-detail/{id?}',[\App\Http\Controllers\Api\WorkOrderController::class,'task_detail'])->name('task_list');
+        Route::post('/task-update/{id?}',[\App\Http\Controllers\Api\WorkOrderController::class,'task_update'])->name('task_update');
+        
+
+        Route::post('/leads-list/{date?}',[\App\Http\Controllers\Api\LeadController::class,'leads_list'])->name('leads_list');
+        Route::post('/lead-detail/{id?}',[\App\Http\Controllers\Api\LeadController::class,'lead_detail'])->name('lead_detail');
+        Route::post('/lead-update/{id?}',[\App\Http\Controllers\Api\LeadController::class,'lead_update'])->name('lead_update');
+        
+
+        Route::post('/create_complaint',[\App\Http\Controllers\Api\UserController::class,'create_complaint'])->name('create_complaint');
+
+        Route::post('/products/{category?}',[\App\Http\Controllers\Api\ProductController::class,'get_all_products'])->name('products');
+        Route::post('/create_order',[\App\Http\Controllers\Api\OrderController::class,'create_order'])->name('create_order');
+        Route::post('/order-list',[\App\Http\Controllers\Api\OrderController::class,'orders_list'])->name('orders_list');
         /* Pre Member API */
         Route::get('/select-account/{account_id}/{device_type?}/{device_token?}',[\App\Http\Controllers\Api\AuthController::class,'select_account'])->name('select_account');
         /* Pre Member API */
