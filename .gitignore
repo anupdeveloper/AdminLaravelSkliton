@@ -3,8 +3,6 @@
 /public/storage
 /storage/app/public/invoice
 /vendor
-composer.json
-composer.lock
 .env
 .env.backup
 .phpunit.result.cache
